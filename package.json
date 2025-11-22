@@ -1,5 +1,5 @@
 {
-  "name": "my-turborepo",
+  "name": "e-com-turbo",
   "private": true,
   "scripts": {
     "build": "turbo run build",
