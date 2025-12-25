@@ -1,7 +1,7 @@
 import { Router } from "express";
-import { createCategory, deleteCategory, getCategories, getCategoryById, updateCategory } from "../controllers/category.controller.js";
+import { createCategory, deleteCategory, getCategories, getCategoryById, updateCategory } from "./category.controller.js";
 import { isAuthenticatedSeller, validateBody } from "@repo/shared-middleware";
-import { CategoryFormSchema } from '@repo/shared-types/index';
+import { CategoryFormSchema } from "@repo/shared-types";
 
 const router: Router = Router();
 

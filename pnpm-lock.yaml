@@ -705,6 +705,9 @@ importers:
       '@repo/db-postgres':
         specifier: workspace:*
         version: link:../../packages/db-postgres
+      '@repo/db-redis':
+        specifier: workspace:*
+        version: link:../../packages/db-redis
       '@repo/error-handler':
         specifier: workspace:*
         version: link:../../packages/error-handler
@@ -717,6 +720,9 @@ importers:
       cookie-parser:
         specifier: ^1.4.7
         version: 1.4.7
+      cors:
+        specifier: ^2.8.5
+        version: 2.8.5
       dotenv:
         specifier: ^17.2.3
         version: 17.2.3

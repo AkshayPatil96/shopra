@@ -1,0 +1,132 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "Product Service API",
+    "description": "API documentation for the Product Service",
+    "version": "1.0.0"
+  },
+  "host": "localhost:3336",
+  "basePath": "/",
+  "schemes": [
+    "http"
+  ],
+  "paths": {
+    "/": {
+      "post": {
+        "description": "",
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        }
+      },
+      "get": {
+        "description": "",
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/{id}": {
+      "get": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        }
+      },
+      "put": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        }
+      },
+      "delete": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "BrandPayload": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "example": "Acme"
+        },
+        "slug": {
+          "type": "string",
+          "example": "acme"
+        },
+        "description": {
+          "type": "string",
+          "example": "Industrial brand"
+        }
+      }
+    },
+    "CategoryPayload": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "example": "Shoes"
+        },
+        "summary": {
+          "type": "string",
+          "example": "All footwear items"
+        },
+        "parentId": {
+          "type": "string",
+          "example": "parent-category-id"
+        }
+      }
+    },
+    "SuccessResponse": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string",
+          "example": "success"
+        },
+        "message": {
+          "type": "string",
+          "example": "Operation completed"
+        }
+      }
+    }
+  }
+}
