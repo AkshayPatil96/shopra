@@ -1,19 +1,21 @@
 import express, { Application, NextFunction, Request, Response } from "express";
+import { randomUUID } from "crypto";
 import cors from "cors";
 import proxy from "express-http-proxy";
 import helmet from "helmet";
 import hpp from "hpp";
 import compression from "compression";
-import morgan from "morgan";
 import rateLimit, { ipKeyGenerator } from "express-rate-limit";
 import slowDown from "express-slow-down";
 import timeout from "connect-timeout";
+import { pinoHttp } from "pino-http";
 
 import {
   authenticate,
   errorMiddleware,
   requestIdMiddleware,
 } from "@repo/shared-middleware";
+import { logger } from "./logger.js";
 
 const app: Application = express();
 
@@ -36,7 +38,31 @@ const PRODUCT_URL = process.env.PRODUCT_SERVICE_URL || "http://localhost:3336";
 ----------------------------------------------------- */
 
 app.use(requestIdMiddleware(serviceName));
-app.use(morgan("dev"));
+app.use(
+  pinoHttp({
+    logger,
+    genReqId: (req) => req.requestId ?? randomUUID(), // reuse gateway requestId or fallback
+    customLogLevel: (req, res, err) => {
+      if (err || res.statusCode >= 500) return "error";
+      if (res.statusCode >= 400) return "warn";
+      return "info";
+    },
+    serializers: {
+      req(req) {
+        return {
+          id: req.requestId,
+          method: req.method,
+          url: req.url,
+        };
+      },
+      res(res) {
+        return {
+          statusCode: res.statusCode,
+        };
+      },
+    },
+  })
+);
 
 /* -----------------------------------------------------
    Security Middleware (EDGE)
