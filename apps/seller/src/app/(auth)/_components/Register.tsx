@@ -35,7 +35,7 @@ import { useForm } from "react-hook-form";
 import {
   RegisterSellerDTO,
   RegisterSellerSchema,
-} from "@repo/shared-types/index";
+} from "@repo/shared-types";
 import { PhoneInputField } from "@/components/ui/phoneInput";
 import { zodResolver } from "@hookform/resolvers/zod";
 import CountryList from "country-list";

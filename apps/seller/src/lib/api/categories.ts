@@ -1,5 +1,5 @@
 import { CategoryAPI } from "@repo/shared-axios";
-import { CategoryFormDTO } from "@repo/shared-types/index";
+import { CategoryFormDTO } from "@repo/shared-types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 export const useCreateCategory = () => {

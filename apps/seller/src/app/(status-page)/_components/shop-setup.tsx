@@ -21,7 +21,7 @@ import {
 import useSeller from "@/hooks/useUser";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { SellerAuthAPI } from "@repo/shared-axios";
-import { ShopCreationDTO, ShopCreationSchema } from "@repo/shared-types/index";
+import { ShopCreationDTO, ShopCreationSchema } from "@repo/shared-types";
 import { useMutation } from "@tanstack/react-query";
 import React from "react";
 import { useForm } from "react-hook-form";

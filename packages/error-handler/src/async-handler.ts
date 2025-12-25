@@ -37,6 +37,7 @@ export const asyncHandler =
 
       // Handle both sync and async errors
       Promise.resolve(fn(req, res, next)).catch((error) => {
+        console.log('error: ', error);
         attachContext(error);
         next(error);
       });

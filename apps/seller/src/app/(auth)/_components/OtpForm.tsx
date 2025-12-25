@@ -21,7 +21,7 @@ import {
   RegisterDTO,
   VerifyUserDTO,
   VerifyUserSchema,
-} from "@repo/shared-types/index";
+} from "@repo/shared-types";
 
 import { useMutation } from "@tanstack/react-query";
 import { REGEXP_ONLY_DIGITS } from "input-otp";

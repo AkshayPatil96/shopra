@@ -12,14 +12,31 @@ import {
   createSellerShop,
 } from './sellerAuth.service.js';
 
+const isProd = process.env.NODE_ENV === 'production';
+
 const setSellerAuthCookies = (
   res: Response,
   tokens: { accessToken: string; refreshToken: string },
   status: string
 ) => {
-  setCookie(res, 'access_token_seller', tokens.accessToken);
-  setCookie(res, 'refresh_token_seller', tokens.refreshToken);
-  setCookie(res, 'seller_status', status);
+  // Access token — SHORT lived
+  setCookie(res, 'access_token_seller', tokens.accessToken, {
+    maxAge: 15 * 60 * 1000, // 15 minutes
+    path: '/',
+  });
+
+  // Refresh token — LONG lived & restricted
+  setCookie(res, 'refresh_token_seller', tokens.refreshToken, {
+    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    path: '/api/auth', // very important
+  });
+
+  // Status cookie (non-sensitive)
+  res.cookie('seller_status', status, {
+    httpOnly: false,
+    secure: isProd,
+    sameSite: isProd ? 'none' : 'lax',
+  });
 };
 
 export const sellerRegistration: RequestHandler = asyncHandler(
@@ -140,19 +157,30 @@ export const getSellerProfile: RequestHandler = asyncHandler(
 export const logoutSeller: RequestHandler = asyncHandler(
   async (_req: Request, res: Response, _next: NextFunction) => {
     const isProd = process.env.NODE_ENV === 'production';
-    const baseCookieOptions = {
+
+    // Access token cookie (path=/)
+    res.clearCookie('access_token_seller', {
       httpOnly: true,
       secure: isProd,
       sameSite: isProd ? 'none' : 'lax',
       path: '/',
-    } as const;
+    });
 
-    res.cookie('access_token_seller', '', { ...baseCookieOptions, maxAge: 0 });
-    res.cookie('refresh_token_seller', '', { ...baseCookieOptions, maxAge: 0 });
-    res.cookie('seller_status', '', { ...baseCookieOptions, maxAge: 0 });
-    res.clearCookie('access_token_seller', baseCookieOptions);
-    res.clearCookie('refresh_token_seller', baseCookieOptions);
-    res.clearCookie('seller_status', baseCookieOptions);
+    // Refresh token cookie (path=/api/auth)
+    res.clearCookie('refresh_token_seller', {
+      httpOnly: true,
+      secure: isProd,
+      sameSite: isProd ? 'none' : 'lax',
+      path: '/api/auth',
+    });
+
+    // Non-httpOnly cookie
+    res.clearCookie('seller_status', {
+      httpOnly: false,
+      secure: isProd,
+      sameSite: isProd ? 'none' : 'lax',
+      path: '/',
+    });
 
     res.status(200).json({
       status: 'success',

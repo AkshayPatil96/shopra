@@ -12,7 +12,7 @@
 //   ProductFormValues,
 //   ProductVariantValues,
 //   VariantAttributeValues,
-// } from "@repo/shared-types/index";
+// } from "@repo/shared-types";
 
 // interface VariantBuilderProps {
 //   basePrice: number;

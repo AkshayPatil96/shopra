@@ -26,7 +26,7 @@ import {
   LoginDTO,
   RegisterDTO,
   RegisterSchema,
-} from "@repo/shared-types/index";
+} from "@repo/shared-types";
 import { useMutation } from "@tanstack/react-query";
 import axios from "axios";
 import { UserAuthAPI } from "@repo/shared-axios";

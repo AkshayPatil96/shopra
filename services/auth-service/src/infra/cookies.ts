@@ -6,13 +6,17 @@ export const setCookie = (
   res: Response,
   name: string,
   value: string,
-  options: Partial<{ maxAge: number; path: string }> = {}
+  options: Partial<{
+    maxAge: number;
+    path: string;
+    sameSite: 'lax' | 'none' | 'strict';
+  }> = {}
 ) => {
   res.cookie(name, value, {
     httpOnly: true,
     secure: isProd,
-    sameSite: isProd ? 'none' : 'lax',
-    maxAge: options?.maxAge ?? 7 * 24 * 60 * 60 * 1000,
-    path: options?.path ?? '/',
+    sameSite: options.sameSite ?? (isProd ? 'none' : 'lax'),
+    maxAge: options.maxAge,
+    path: options.path ?? '/',
   });
 };

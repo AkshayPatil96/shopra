@@ -11,14 +11,31 @@ import {
   getUserProfileData,
 } from './userAuth.service.js';
 
+const isProd = process.env.NODE_ENV === 'production';
+
 const setUserAuthCookies = (
   res: Response,
   tokens: { accessToken: string; refreshToken: string },
   status: string
 ) => {
-  setCookie(res, 'access_token_user', tokens.accessToken);
-  setCookie(res, 'refresh_token_user', tokens.refreshToken);
-  setCookie(res, 'user_status', status);
+  // Access token — SHORT lived
+  setCookie(res, 'access_token_user', tokens.accessToken, {
+    maxAge: 15 * 60 * 1000, // 15 minutes
+    path: '/',
+  });
+
+  // Refresh token — LONG lived & restricted
+  setCookie(res, 'refresh_token_user', tokens.refreshToken, {
+    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    path: '/api/auth', // very important
+  });
+
+  // Status cookie (non-sensitive)
+  res.cookie('user_status', status, {
+    httpOnly: false,
+    secure: isProd,
+    sameSite: isProd ? 'none' : 'lax',
+  });
 };
 
 export const userRegistration: RequestHandler = asyncHandler(
@@ -125,6 +142,7 @@ export const resetPassword: RequestHandler = asyncHandler(
 export const getUserProfile: RequestHandler = asyncHandler(
   async (req: Request, res: Response, _next: NextFunction) => {
     const userId = req.auth?.userId;
+
     const userData = await getUserProfileData(userId);
 
     res.status(200).json({
@@ -137,19 +155,29 @@ export const getUserProfile: RequestHandler = asyncHandler(
 export const logoutUser: RequestHandler = asyncHandler(
   async (_req: Request, res: Response, _next: NextFunction) => {
     const isProd = process.env.NODE_ENV === 'production';
-    const baseCookieOptions = {
+
+    // Access token cookie (path=/)
+    res.clearCookie('access_token_user', {
       httpOnly: true,
       secure: isProd,
       sameSite: isProd ? 'none' : 'lax',
       path: '/',
-    } as const;
+    });
 
-    res.cookie('access_token_user', '', { ...baseCookieOptions, maxAge: 0 });
-    res.cookie('refresh_token_user', '', { ...baseCookieOptions, maxAge: 0 });
-    res.cookie('user_status', '', { ...baseCookieOptions, maxAge: 0 });
-    res.clearCookie('access_token_user', baseCookieOptions);
-    res.clearCookie('refresh_token_user', baseCookieOptions);
-    res.clearCookie('user_status', baseCookieOptions);
+    // Refresh token cookie (path=/api/auth)
+    res.clearCookie('refresh_token_user', {
+      httpOnly: true,
+      secure: isProd,
+      sameSite: isProd ? 'none' : 'lax',
+      path: '/api/auth',
+    });
+
+    // Non-httpOnly cookie
+    res.clearCookie('user_status', {
+      secure: isProd,
+      sameSite: isProd ? 'none' : 'lax',
+      path: '/',
+    });
 
     res.status(200).json({
       status: 'success',

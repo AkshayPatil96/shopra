@@ -22,7 +22,7 @@ import {
   CategoryFormSchema,
   CreateBrandDTO,
   CreateBrandSchema,
-} from "@repo/shared-types/index";
+} from "@repo/shared-types";
 import {
   Select,
   SelectContent,

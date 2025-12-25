@@ -22,7 +22,7 @@ import {
 import {
   CreateProductZ as ProductFormSchema,
   CreateProductDTO as ProductFormValues,
-} from "@repo/shared-types/index";
+} from "@repo/shared-types";
 import { useGetCategories } from "@/lib/api/categories";
 import {
   Select,

@@ -1,6 +1,8 @@
 import express, { type Application, Request, Response } from "express";
 import cors from "cors";
 import swaggerUi from "swagger-ui-express";
+import dotenv from "dotenv";
+dotenv.config();
 
 import { requestIdMiddleware, errorMiddleware } from "@repo/shared-middleware";
 import swaggerDocument from "./swagger-output.json" with { type: "json" };

@@ -7,7 +7,6 @@ import {
   setStripeConnectCache,
 } from "./stripeConnect.cache.js";
 import type { StripeConnectResultDTO } from "./stripeConnect.types.js";
-import { UserStatus } from "@repo/shared-types";
 
 const getSellerFrontendUrl = () => process.env.SELLER_FRONTEND_URL || "http://localhost:8001";
 
@@ -63,7 +62,7 @@ export const createStripeConnectSession = async (
     type: "account_onboarding",
   });
 
-  await updateSellerRecord(sellerId, { stripeId: account.id, status: UserStatus.ACTIVE });
+  await updateSellerRecord(sellerId, { stripeId: account.id, status: "ACTIVE" } as any);
   await invalidateStripeConnectCache(sellerId);
 
   const session: StripeConnectResultDTO = {

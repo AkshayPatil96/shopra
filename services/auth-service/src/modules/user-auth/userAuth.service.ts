@@ -69,6 +69,7 @@ export const verifyUserAccount = async ({
 
 export const loginUserAccount = async ({ email, password }: { email: string; password: string }) => {
   const user = await findUserByEmailWithPassword(email);
+  console.log('user: ', user);
 
   if (!user) {
     throw new ValidationError('Invalid email or password');

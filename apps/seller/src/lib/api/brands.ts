@@ -1,5 +1,5 @@
 import { BrandApi } from "@repo/shared-axios";
-import { CreateBrandDTO } from "@repo/shared-types/brand.types";
+import { CreateBrandDTO } from "@repo/shared-types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 export const useCreateBrand = () => {

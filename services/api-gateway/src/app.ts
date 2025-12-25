@@ -25,6 +25,7 @@ const app: Application = express();
 
 // Required when behind a reverse proxy (Railway, Render, AWS LB, Nginx)
 app.set("trust proxy", 1);
+app.disable("x-powered-by");
 
 const serviceName = process.env.SERVICE_NAME || "api-gateway";
 
@@ -145,6 +146,7 @@ const ensureAuthHeaderFromCookies = (req: Request) => {
   // Refresh token routes
   if (path.startsWith("/api/auth/user/refresh-token")) {
     const token = getCookieValue(cookieHeader, REFRESH_TOKEN_USER_COOKIE);
+    console.log('👌👌👌👌👌token:==================> ', token);
     if (token) req.headers.authorization = `Bearer ${token}`;
     return;
   }
