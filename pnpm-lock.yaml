@@ -617,15 +617,12 @@ importers:
       '@repo/db-mongodb':
         specifier: workspace:*
         version: link:../../packages/db-mongodb
-      '@repo/db-postgres':
+      '@repo/db-redis':
         specifier: workspace:*
-        version: link:../../packages/db-postgres
+        version: link:../../packages/db-redis
       '@repo/error-handler':
         specifier: workspace:*
         version: link:../../packages/error-handler
-      '@repo/shared-email':
-        specifier: workspace:*
-        version: link:../../packages/shared-email
       '@repo/shared-middleware':
         specifier: workspace:*
         version: link:../../packages/shared-middleware

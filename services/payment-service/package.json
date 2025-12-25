@@ -2,12 +2,12 @@
   "name": "payment-service",
   "version": "1.0.0",
   "description": "",
-  "main": "dist/src/app.js",
+  "main": "dist/server.js",
   "type": "module",
   "scripts": {
-    "dev": "tsx watch src/app.ts",
-    "build": "tsc -p tsconfig.json",
-    "start": "node dist/src/app.js",
+    "dev": "tsx watch src/server.ts",
+    "build": "tsc -p tsconfig.json && pnpm run swagger",
+    "start": "node dist/server.js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "swagger": "node src/swagger.js"
   },
@@ -17,8 +17,7 @@
   "dependencies": {
     "@repo/error-handler": "workspace:*",
     "@repo/db-mongodb": "workspace:*",
-    "@repo/db-postgres": "workspace:*",
-    "@repo/shared-email": "workspace:*",
+    "@repo/db-redis": "workspace:*",
     "@repo/shared-middleware": "workspace:*",
     "bcryptjs": "^3.0.3",
     "cookie-parser": "^1.4.7",

@@ -1,0 +1,87 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "Payment Service API",
+    "description": "API documentation for the Payment Service",
+    "version": "1.0.0"
+  },
+  "host": "localhost:3335",
+  "basePath": "/",
+  "schemes": [
+    "http"
+  ],
+  "paths": {
+    "/connect": {
+      "post": {
+        "tags": [
+          "Stripe Connect"
+        ],
+        "description": "Create or resume a Stripe Connect onboarding session for the authenticated seller.",
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/connect-stripe": {
+      "post": {
+        "description": "",
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "StripeConnectResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "example": true
+        },
+        "message": {
+          "type": "string",
+          "example": "Stripe onboarding link created successfully."
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "accountId": {
+              "type": "string",
+              "example": "acct_123456789"
+            },
+            "onboardingUrl": {
+              "type": "string",
+              "example": "https://connect.stripe.com/setup/s/acct_123456789"
+            },
+            "status": {
+              "type": "string",
+              "example": "pending"
+            },
+            "alreadyConnected": {
+              "type": "boolean",
+              "example": false
+            }
+          }
+        }
+      }
+    },
+    "UnauthorizedResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "example": false
+        },
+        "message": {
+          "type": "string",
+          "example": "Unauthorized"
+        }
+      }
+    }
+  }
+}
