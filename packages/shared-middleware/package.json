@@ -1,0 +1,30 @@
+{
+  "name": "@repo/shared-middleware",
+  "version": "1.0.0",
+  "type": "module",
+  "private": true,
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "development": "./src/index.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc"
+  },
+  "dependencies": {
+    "@repo/db-mongodb": "workspace:*",
+    "@repo/error-handler": "workspace:*",
+    "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.2"
+  },
+  "devDependencies": {
+    "@repo/express-types": "workspace:*",
+    "@repo/typescript-config": "workspace:*",
+    "@types/express": "^5.0.5",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/node": "^20.19.25"
+  }
+}

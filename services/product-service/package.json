@@ -1,0 +1,45 @@
+{
+  "name": "product-service",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dist/src/app.js",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/app.ts",
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/src/app.js",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "swagger": "node src/swagger.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@repo/error-handler": "workspace:*",
+    "@repo/db-mongodb": "workspace:*",
+    "@repo/db-postgres": "workspace:*",
+    "@repo/shared-email": "workspace:*",
+    "@repo/shared-middleware": "workspace:*",
+    "cookie-parser": "^1.4.7",
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0",
+    "express-rate-limit": "^8.2.1",
+    "jsonwebtoken": "^9.0.2",
+    "morgan": "^1.10.1",
+    "swagger-autogen": "^2.23.7",
+    "swagger-ui-express": "^5.0.1"
+  },
+  "devDependencies": {
+    "@repo/express-types": "workspace:*",
+    "@repo/shared-types": "workspace:*",
+    "@repo/typescript-config": "workspace:*",
+    "@types/cookie-parser": "^1.4.10",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.5",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/morgan": "^1.9.10",
+    "@types/node": "^20.12.12",
+    "@types/swagger-ui-express": "^4.1.8",
+    "tsx": "^4.0.0"
+  }
+}

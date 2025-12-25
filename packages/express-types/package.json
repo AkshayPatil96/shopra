@@ -1,0 +1,12 @@
+{
+  "name": "@repo/express-types",
+  "version": "1.0.0",
+  "private": true,
+  "types": "index.d.ts",
+  "description": "Ambient Express Request type augmentation (requestId, serviceName) for monorepo services.",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^5.1.0",
+    "@repo/db-mongodb": "workspace:*"
+  }
+}

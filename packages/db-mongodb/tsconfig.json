@@ -1,0 +1,28 @@
+{
+  "extends": "@repo/typescript-config/base.json",
+  "compilerOptions": {
+    /* Build output */
+    "rootDir": "src",
+    "outDir": "dist",
+
+    /* Required for tsc -b */
+    "composite": true,
+    "noEmit": false,
+
+    /* ESM / Node compatibility */
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "target": "ES2022",
+
+    /* Types */
+    "declaration": true,
+    "declarationMap": true,
+    "incremental": true,
+
+    /* Safety */
+    "strict": true,
+    "esModuleInterop": true
+  },
+  "include": ["src"],
+  "exclude": ["node_modules", "dist"]
+}

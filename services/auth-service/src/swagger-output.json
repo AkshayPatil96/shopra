@@ -1,0 +1,422 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "Auth Service API",
+    "description": "API documentation for the Auth Service",
+    "version": "1.0.0"
+  },
+  "host": "localhost:3334",
+  "basePath": "/",
+  "schemes": [
+    "http"
+  ],
+  "paths": {
+    "/register": {
+      "post": {
+        "description": "",
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/verify-otp": {
+      "post": {
+        "description": "",
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/login": {
+      "post": {
+        "description": "",
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/refresh-token": {
+      "get": {
+        "description": "",
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/forgot-password": {
+      "post": {
+        "description": "",
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/reset-password": {
+      "post": {
+        "description": "",
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/logout": {
+      "post": {
+        "description": "",
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/me": {
+      "get": {
+        "description": "",
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/create-shop": {
+      "post": {
+        "description": "",
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "UserRegisterRequest": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "example": "John Doe"
+        },
+        "email": {
+          "type": "string",
+          "example": "john@example.com"
+        }
+      }
+    },
+    "SellerRegisterRequest": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "example": "Acme Corp"
+        },
+        "email": {
+          "type": "string",
+          "example": "seller@example.com"
+        }
+      }
+    },
+    "UserVerifyRequest": {
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string",
+          "example": "john@example.com"
+        },
+        "otp": {
+          "type": "string",
+          "example": "123456"
+        },
+        "password": {
+          "type": "string",
+          "example": "password123"
+        },
+        "name": {
+          "type": "string",
+          "example": "John Doe"
+        }
+      }
+    },
+    "SellerVerifyRequest": {
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string",
+          "example": "seller@example.com"
+        },
+        "otp": {
+          "type": "string",
+          "example": "123456"
+        },
+        "password": {
+          "type": "string",
+          "example": "password123"
+        },
+        "name": {
+          "type": "string",
+          "example": "Acme Corp"
+        },
+        "phone": {
+          "type": "string",
+          "example": "+123456789"
+        },
+        "country": {
+          "type": "string",
+          "example": "US"
+        }
+      }
+    },
+    "LoginRequest": {
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string",
+          "example": "john@example.com"
+        },
+        "password": {
+          "type": "string",
+          "example": "password123"
+        }
+      }
+    },
+    "EmailOnlyRequest": {
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string",
+          "example": "john@example.com"
+        }
+      }
+    },
+    "ResetPasswordRequest": {
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string",
+          "example": "john@example.com"
+        },
+        "token": {
+          "type": "string",
+          "example": "reset-token"
+        },
+        "newPassword": {
+          "type": "string",
+          "example": "newPassword123"
+        }
+      }
+    },
+    "CreateShopRequest": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "example": "My Shop"
+        },
+        "bio": {
+          "type": "string",
+          "example": "Independent store"
+        },
+        "address": {
+          "type": "string",
+          "example": "123 Main St"
+        },
+        "opening_hours": {
+          "type": "string",
+          "example": "9-5"
+        },
+        "category": {
+          "type": "string",
+          "example": "fashion"
+        },
+        "website": {
+          "type": "string",
+          "example": "https://shop.example.com"
+        }
+      }
+    },
+    "OtpDispatchResponse": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "type": "string",
+          "example": "OTP sent to email. Please check your account."
+        }
+      }
+    },
+    "AuthSuccessResponse": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string",
+          "example": "success"
+        },
+        "message": {
+          "type": "string",
+          "example": "Login successful"
+        },
+        "accessToken": {
+          "type": "string",
+          "example": "jwt"
+        },
+        "data": {
+          "type": "object",
+          "properties": {}
+        }
+      }
+    },
+    "UserLoginResponse": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string",
+          "example": "success"
+        },
+        "message": {
+          "type": "string",
+          "example": "Login successful"
+        },
+        "accessToken": {
+          "type": "string",
+          "example": "jwt"
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "example": "userId"
+            },
+            "email": {
+              "type": "string",
+              "example": "john@example.com"
+            },
+            "name": {
+              "type": "string",
+              "example": "John Doe"
+            },
+            "status": {
+              "type": "string",
+              "example": "active"
+            }
+          }
+        }
+      }
+    },
+    "SellerLoginResponse": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string",
+          "example": "success"
+        },
+        "message": {
+          "type": "string",
+          "example": "Login successful"
+        },
+        "accessToken": {
+          "type": "string",
+          "example": "jwt"
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "example": "sellerId"
+            },
+            "email": {
+              "type": "string",
+              "example": "seller@example.com"
+            },
+            "name": {
+              "type": "string",
+              "example": "Acme Corp"
+            },
+            "phone": {
+              "type": "string",
+              "example": "+123456789"
+            },
+            "country": {
+              "type": "string",
+              "example": "US"
+            },
+            "status": {
+              "type": "string",
+              "example": "active"
+            }
+          }
+        }
+      }
+    },
+    "UserProfileResponse": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string",
+          "example": "success"
+        },
+        "data": {
+          "type": "object",
+          "properties": {}
+        }
+      }
+    },
+    "SellerProfileResponse": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string",
+          "example": "success"
+        },
+        "data": {
+          "type": "array",
+          "example": [],
+          "items": {}
+        }
+      }
+    },
+    "ShopResponse": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string",
+          "example": "success"
+        },
+        "message": {
+          "type": "string",
+          "example": "Shop created successfully"
+        },
+        "data": {
+          "type": "object",
+          "properties": {}
+        }
+      }
+    },
+    "MessageOnlyResponse": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string",
+          "example": "success"
+        },
+        "message": {
+          "type": "string",
+          "example": "Operation completed"
+        }
+      }
+    }
+  }
+}
