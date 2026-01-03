@@ -3,11 +3,15 @@
   "ui": "tui",
   "tasks": {
     "dev": {
+      "dependsOn": [
+        "^db:generate"
+      ],
       "cache": false,
       "persistent": true
     },
     "build": {
       "dependsOn": [
+        "^db:generate",
         "^build"
       ],
       "inputs": [
@@ -18,6 +22,10 @@
         ".next/**",
         "!.next/cache/**",
         "dist/**"
+      ],
+      "env": [
+        "DATABASE_URL",
+        "MONGODB_URI"
       ]
     },
     "start": {
@@ -27,7 +35,51 @@
     },
     "check-types": {
       "dependsOn": [
-        "^check-types"
+        "^check-types",
+        "^db:generate"
+      ]
+    },
+    "lint": {
+      "dependsOn": [
+        "^db:generate"
+      ]
+    },
+    "db:generate": {
+      "cache": false,
+      "env": [
+        "DATABASE_URL"
+      ]
+    },
+    "db:push": {
+      "cache": false,
+      "env": [
+        "DATABASE_URL"
+      ]
+    },
+    "db:migrate": {
+      "cache": false,
+      "persistent": true,
+      "env": [
+        "DATABASE_URL"
+      ]
+    },
+    "db:deploy": {
+      "cache": false,
+      "env": [
+        "DATABASE_URL"
+      ]
+    },
+    "db:studio": {
+      "cache": false,
+      "persistent": true,
+      "env": [
+        "DATABASE_URL"
+      ]
+    },
+    "db:seed": {
+      "cache": false,
+      "env": [
+        "DATABASE_URL"
       ]
     }
   }

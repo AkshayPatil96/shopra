@@ -21,18 +21,20 @@ export const findSellerById = (id: string): Promise<ISellerDocument | null> =>
 export const updateSellerPassword = (email: string, password: string): Promise<ISellerDocument | null> =>
   Seller.findOneAndUpdate({ email }, { password }, { new: true }).exec();
 
-export const aggregateSellerProfile = (sellerId: string | number) =>
-  Seller.aggregate([
-    { $match: { _id: sellerId } },
-    {
-      $lookup: {
-        from: 'shops',
-        localField: '_id',
-        foreignField: 'sellerId',
-        as: 'shops',
-        pipeline: [{ $project: { id: 1, name: 1 } }],
-      },
-    },
-  ]);
+// export const aggregateSellerProfile = async (sellerId: string | number) => {
+//   return await Seller.aggregate([
+//     { $match: { _id: sellerId } },
+//     // {
+//     //   $lookup: {
+//     //     from: 'shops',
+//     //     localField: '_id',
+//     //     foreignField: 'sellerId',
+//     //     as: 'shops',
+//     //     pipeline: [{ $project: { id: 1, name: 1 } }],
+//     //   },
+//     // },
+//   ]);
 
+//   // return await Seller.findById(sellerId)
+// }
 export const createShopRecord = (data: Record<string, unknown>) => Shop.create(data);

@@ -51,11 +51,12 @@ export const createBrandService = async (payload: BrandCreateInput): Promise<Bra
 };
 
 export const listBrandsService = async (query: BrandListQuery): Promise<BrandListResult> => {
-  const where = buildBrandFilter(query.q);
+  const where = buildBrandFilter(query.q, query.status);
   const orderBy = mapBrandSort(query.sort);
+  const isDefaultStatus = query.status === "active" || !query.status;
 
   if (query.select === "options") {
-    if (!query.q) {
+    if (!query.q && isDefaultStatus) {
       const cached = await getBrandOptionsCache();
       if (cached) {
         return { mode: "options", data: cached };
@@ -71,7 +72,7 @@ export const listBrandsService = async (query: BrandListQuery): Promise<BrandLis
 
     const options = optionRecords.map((option) => toBrandOptionDTO(option));
 
-    if (!query.q) {
+    if (!query.q && isDefaultStatus) {
       await setBrandOptionsCache(options);
     }
 

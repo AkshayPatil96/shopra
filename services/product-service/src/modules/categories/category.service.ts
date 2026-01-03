@@ -114,11 +114,12 @@ export const listCategoriesService = async (params: CategoryListParams): Promise
   const page = normalizePagination(params.page, 1);
   const limit = normalizePagination(params.limit, DEFAULT_CATEGORY_LIMIT);
   const skip = (page - 1) * limit;
-  const where = buildCategoryFilter(params.q);
+  const where = buildCategoryFilter(params.q, params.status);
   const orderBy = mapCategorySort(params.sort);
+  const isDefaultStatus = params.status === "active" || !params.status;
 
   if (params.select === "options") {
-    if (!params.q) {
+    if (!params.q && isDefaultStatus) {
       const cached = await getCategoryOptionsCache();
       if (cached) {
         return { mode: "options", data: cached };
@@ -134,7 +135,7 @@ export const listCategoriesService = async (params: CategoryListParams): Promise
 
     const options = categories.map((category) => toCategoryOptionDTO(category));
 
-    if (!params.q) {
+    if (!params.q && isDefaultStatus) {
       await setCategoryOptionsCache(options);
     }
 

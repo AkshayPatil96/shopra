@@ -79,12 +79,7 @@ export const loginUser: RequestHandler = asyncHandler(
       status: 'success',
       message: 'Login successful',
       ...tokenPayload,
-      data: {
-        id: user._id,
-        email: user.email,
-        name: user.name,
-        status: user.status,
-      },
+      data: user,
     });
   }
 );

@@ -121,13 +121,13 @@ const Login = () => {
                     <FormLabel className="uppercase">Password</FormLabel>
                     <FormControl>
                       <div className="relative flex items-center">
-                        <LockIcon className="absolute left-3 size-5 text-gray-400" />
                         <Input
                           placeholder="Enter your password"
                           type={passwordVisible ? "text" : "password"}
                           {...field}
                           className="pl-8 pr-8"
                         />
+                        <LockIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-5 text-gray-400" />
                         <button
                           type="button"
                           onClick={() => setPasswordVisible(!passwordVisible)}

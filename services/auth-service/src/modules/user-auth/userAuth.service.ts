@@ -18,6 +18,7 @@ import {
   updateUserPassword,
 } from '../../repositories/user.repository.js';
 import { issueAuthTokens, verifyRefreshToken } from '../../infra/jwt.js';
+import { toUserDTO } from './userAuth.types.js';
 
 const USER_FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:8000';
 
@@ -64,12 +65,13 @@ export const verifyUserAccount = async ({
   const user = await createUser({ email, name, password: hashedPassword });
   const tokens = issueAuthTokens(user._id.toString(), 'user');
 
-  return { user, tokens, role: 'user' as const };
+  const userDTO = toUserDTO(user);
+
+  return { user: userDTO, tokens, role: 'user' as const };
 };
 
 export const loginUserAccount = async ({ email, password }: { email: string; password: string }) => {
   const user = await findUserByEmailWithPassword(email);
-  console.log('user: ', user);
 
   if (!user) {
     throw new ValidationError('Invalid email or password');
@@ -84,8 +86,9 @@ export const loginUserAccount = async ({ email, password }: { email: string; pas
   }
 
   const tokens = issueAuthTokens(user._id.toString(), 'user');
+  const userDTO = toUserDTO(user);
 
-  return { user, tokens, role: 'user' as const };
+  return { user: userDTO, tokens, role: 'user' as const };
 };
 
 export const refreshUserSession = async (token?: string) => {
@@ -106,8 +109,9 @@ export const refreshUserSession = async (token?: string) => {
   }
 
   const tokens = issueAuthTokens(user._id.toString(), decoded.role);
+  const userDTO = toUserDTO(user);
 
-  return { user, tokens, role: decoded.role };
+  return { user: userDTO, tokens, role: decoded.role };
 };
 
 export const initiateUserPasswordReset = async (email: string) => {
@@ -171,5 +175,5 @@ export const getUserProfileData = async (userId?: string) => {
     throw new ValidationError('User not authenticated');
   }
 
-  return user;
+  return toUserDTO(user);
 };

@@ -1,7 +1,11 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-const REFRESH_URL = `${process.env.NEXT_PUBLIC_API_GATEWAY}auth/seller/refresh-token`;
+/* -------------------------------------------------------
+   CONFIG
+------------------------------------------------------- */
+const API_GATEWAY = process.env.NEXT_PUBLIC_API_GATEWAY!;
+const REFRESH_URL = `${API_GATEWAY}/auth/seller/refresh-token`;
 
 const AUTH_PAGES = [
   "/login",
@@ -11,131 +15,160 @@ const AUTH_PAGES = [
   "/verify-otp",
 ];
 
+const DASHBOARD_PAGE = "/dashboard";
 const PENDING_PAGE = "/onboarding";
 const SUSPENDED_PAGE = "/suspended";
-const DASHBOARD_PAGE = "/dashboard";
 
+/* -------------------------------------------------------
+   MAIN MIDDLEWARE
+------------------------------------------------------- */
 export async function proxy(req: NextRequest) {
   const url = req.nextUrl.clone();
   const pathname = url.pathname;
 
-  // -------------------------------------
-  // 1️⃣ Try refresh (returns { authenticated, response, status })
-  // -------------------------------------
-  const refresh = await tryRefresh(req);
+  /* -------------------------------------
+     1️⃣ Detect access token (PRIMARY AUTH)
+  ------------------------------------- */
+  const hasAccessToken = req.cookies.has("access_token_seller");
 
-  // -------------------------------------
-  // 2️⃣ Extract status (from cookie OR refresh response)
-  // -------------------------------------
+  /* -------------------------------------
+     2️⃣ Try refresh ONLY if needed
+  ------------------------------------- */
+  const refresh = hasAccessToken ? null : await tryRefresh(req);
+
+  const isAuthenticated =
+    hasAccessToken || refresh?.authenticated === true;
+
+  /* -------------------------------------
+     3️⃣ Resolve user status
+  ------------------------------------- */
   const status =
+    refresh?.status ??
     req.cookies.get("seller_status")?.value;
 
-  const isAuthPage = AUTH_PAGES.some((p) => pathname.startsWith(p));
+  const isAuthPage = AUTH_PAGES.some((p) =>
+    pathname.startsWith(p)
+  );
 
-  // -------------------------------------
-  // 3️⃣ Unauthenticated users
-  // -------------------------------------
-  if (!refresh.authenticated) {
-    if (isAuthPage) return NextResponse.next(); // allow login pages
+  /* -------------------------------------
+     4️⃣ UNAUTHENTICATED
+  ------------------------------------- */
+  if (!isAuthenticated) {
+    if (isAuthPage) {
+      return NextResponse.next();
+    }
 
     url.pathname = "/login";
     return NextResponse.redirect(url);
   }
 
-  // -------------------------------------
-  // 4️⃣ Authenticated → block auth pages
-  // -------------------------------------
+  /* -------------------------------------
+     5️⃣ AUTHENTICATED → BLOCK AUTH PAGES
+  ------------------------------------- */
   if (isAuthPage) {
-    // redirect based on status
-    if (status === "PENDING") {
-      url.pathname = PENDING_PAGE;
-      return NextResponse.redirect(url);
-    }
-    if (status === "SUSPENDED") {
-      url.pathname = SUSPENDED_PAGE;
-      return NextResponse.redirect(url);
-    }
-    url.pathname = DASHBOARD_PAGE;
-    return NextResponse.redirect(url);
+    return redirectByStatus(url, status, refresh);
   }
 
-  // -------------------------------------
-  // 5️⃣ PENDING users → ONLY onboarding allowed
-  // -------------------------------------
+  /* -------------------------------------
+     6️⃣ STATUS-BASED ROUTING
+  ------------------------------------- */
   if (status === "PENDING" && !pathname.startsWith(PENDING_PAGE)) {
     url.pathname = PENDING_PAGE;
-    return NextResponse.redirect(url);
+    return redirectWithCookies(url, refresh);
   }
 
-  // -------------------------------------
-  // 6️⃣ SUSPENDED users → ONLY suspended page allowed
-  // -------------------------------------
   if (status === "SUSPENDED" && !pathname.startsWith(SUSPENDED_PAGE)) {
     url.pathname = SUSPENDED_PAGE;
-    return NextResponse.redirect(url);
+    return redirectWithCookies(url, refresh);
   }
 
-  // -------------------------------------
-  // 7️⃣ ACTIVE users → block onboarding & suspended
-  // -------------------------------------
-  if (status === "ACTIVE") {
-    console.log("ACTIVE user trying to access");
-    if (pathname.startsWith(PENDING_PAGE) || pathname.startsWith(SUSPENDED_PAGE)) {
-      url.pathname = DASHBOARD_PAGE;
-      return NextResponse.redirect(url);
-    }
+  if (
+    status === "ACTIVE" &&
+    (pathname.startsWith(PENDING_PAGE) ||
+      pathname.startsWith(SUSPENDED_PAGE))
+  ) {
+    url.pathname = DASHBOARD_PAGE;
+    return redirectWithCookies(url, refresh);
   }
 
-  // -------------------------------------
-  // 8️⃣ Allow request with refreshed cookies
-  // -------------------------------------
-  return refresh.response ?? NextResponse.next();
+  /* -------------------------------------
+     7️⃣ ALLOW REQUEST
+  ------------------------------------- */
+  if (refresh?.response) return refresh.response;
+  return NextResponse.next();
 }
 
-// ======================================================
-// 🔄 REFRESH TOKENS — CLEAN VERSION
-// ======================================================
+/* -------------------------------------------------------
+   🔄 REFRESH HANDLER
+------------------------------------------------------- */
 async function tryRefresh(req: NextRequest) {
   try {
     const refreshRes = await fetch(REFRESH_URL, {
-      method: "GET",
+      method: "POST",
       headers: {
         cookie: req.headers.get("cookie") ?? "",
       },
+      credentials: "include",
     });
 
     if (!refreshRes.ok) return { authenticated: false };
 
-    const data = await refreshRes.json();
-
-    // Create response that contains updated cookies
     const res = NextResponse.next();
 
-    res.cookies.set("access_token_seller", data.accessToken, {
-      httpOnly: true,
-      secure: true,
-      sameSite: "none",
-      path: "/",
-      maxAge: 60 * 15, // 15 minutes
-    });
+    /* 🔥 CRITICAL: forward refreshed cookies */
+    const setCookie = refreshRes.headers.get("set-cookie");
+    if (setCookie) {
+      res.headers.append("set-cookie", setCookie);
+    }
 
-    res.cookies.set("seller_status", data.status, {
-      httpOnly: false,
-      secure: true,
-      sameSite: "none",
-      path: "/",
-    });
+    const data = await refreshRes.json();
 
     return {
       authenticated: true,
       response: res,
       status: data.status,
     };
-  } catch (err) {
+  } catch {
     return { authenticated: false };
   }
 }
 
+/* -------------------------------------------------------
+   🔁 HELPERS
+------------------------------------------------------- */
+function redirectByStatus(
+  url: URL,
+  status?: string,
+  refresh?: any
+) {
+  if (status === "PENDING") url.pathname = PENDING_PAGE;
+  else if (status === "SUSPENDED") url.pathname = SUSPENDED_PAGE;
+  else url.pathname = DASHBOARD_PAGE;
+
+  return redirectWithCookies(url, refresh);
+}
+
+function redirectWithCookies(
+  url: URL,
+  refresh?: any
+) {
+  const res = NextResponse.redirect(url);
+
+  /* Preserve cookies from refresh */
+  if (refresh?.response) {
+    refresh.response.headers.forEach((value: string, key: string) => {
+      if (key.toLowerCase() === "set-cookie") {
+        res.headers.append(key, value);
+      }
+    });
+  }
+
+  return res;
+}
+
+/* -------------------------------------------------------
+   MATCHER
+------------------------------------------------------- */
 export const config = {
   matcher: ["/((?!_next|favicon.ico|public).*)"],
 };

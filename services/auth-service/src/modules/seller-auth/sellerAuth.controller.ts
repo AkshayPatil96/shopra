@@ -80,14 +80,7 @@ export const loginSeller: RequestHandler = asyncHandler(
       status: 'success',
       message: 'Login successful',
       ...tokenPayload,
-      data: {
-        id: seller._id,
-        email: seller.email,
-        name: seller.name,
-        phone: seller.phone,
-        country: seller.country,
-        status: seller.status,
-      },
+      data: seller,
     });
   }
 );

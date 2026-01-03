@@ -19,7 +19,16 @@ export const useCreateBrand = () => {
   });
 };
 
-export const useGetBrands = (params: any) => {
+interface BrandQueryParams {
+  page?: number;
+  limit?: number;
+  q?: string;
+  sort?: string;
+  status?: "active" | "inactive" | "all";
+  select?: string;
+}
+
+export const useGetBrands = (params: BrandQueryParams) => {
   return useQuery({
     queryKey: ["brands", params],
     queryFn: async () => {

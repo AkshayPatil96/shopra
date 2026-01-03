@@ -8,7 +8,7 @@ export interface SellerDTO {
   country: string;
   address?: string;
   shops?: { id: string; name: string }[] | [];
-  stripeConnected: boolean;
+  stripeId?: string;
   status: UserStatus;
   createdAt: string;
   updatedAt: string;

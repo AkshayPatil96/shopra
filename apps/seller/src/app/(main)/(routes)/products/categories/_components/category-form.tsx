@@ -16,7 +16,7 @@ import {
 
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { Switch } from "@/components/ui/switch";
 import { CategoryFormDTO, CategoryFormSchema } from "@repo/shared-types";
 import {
   Select,
@@ -71,7 +71,7 @@ export default function AddCategoryForm({
       ? categoriesData.filter((cat) => cat?.value !== id)
       : categoriesData;
 
-  const form = useForm<CategoryFormDTO>({
+  const form = useForm<CategoryFormDTO | any>({
     resolver: zodResolver(CategoryFormSchema),
     defaultValues: {
       name: "",
@@ -79,6 +79,8 @@ export default function AddCategoryForm({
       parentId: null,
       description: "",
       summary: "",
+      order: 0,
+      isActive: true,
     },
   });
 
@@ -205,8 +207,8 @@ export default function AddCategoryForm({
               <FormLabel>Parent Category</FormLabel>
               <FormControl>
                 <Select
-                  value={field.value}
-                  onValueChange={field.onChange}
+                  value={field.value ?? ""}
+                  onValueChange={(value) => field.onChange(value || null)}
                 >
                   <SelectTrigger>
                     <SelectValue>
@@ -274,6 +276,33 @@ export default function AddCategoryForm({
           )}
         />
 
+        {/* Display Order */}
+        <FormField
+          control={form.control}
+          name="order"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Display Order</FormLabel>
+              <FormControl>
+                <Input
+                  type="number"
+                  min={0}
+                  value={field.value ?? 0}
+                  onChange={(event) => {
+                    const nextValue = Number(event.target.value);
+                    field.onChange(Number.isNaN(nextValue) ? 0 : nextValue);
+                  }}
+                  placeholder="0"
+                />
+              </FormControl>
+              <FormDescription>
+                Lower numbers appear first in lists.
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
         {/* Slug */}
         {/* <FormField
           control={form.control}
@@ -294,6 +323,29 @@ export default function AddCategoryForm({
             </FormItem>
           )}
         /> */}
+
+        {/* Status */}
+        <FormField
+          control={form.control}
+          name="isActive"
+          render={({ field }) => (
+            <FormItem className="flex items-center justify-between rounded-xl border p-4">
+              <div className="space-y-1">
+                <FormLabel>Active</FormLabel>
+                <FormDescription>
+                  Disable to hide this category from storefronts.
+                </FormDescription>
+              </div>
+              <FormControl>
+                <Switch
+                  checked={Boolean(field.value)}
+                  onCheckedChange={field.onChange}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
         {/* Submit */}
         <div className="flex justify-end gap-4">

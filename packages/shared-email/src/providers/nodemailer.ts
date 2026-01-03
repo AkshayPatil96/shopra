@@ -4,12 +4,15 @@ import nodeMailer, { Transporter } from "nodemailer";
 import path from "path";
 import { fileURLToPath } from "url";
 
-export const config = {
-  SMTP_HOST: process.env.SMTP_HOST,
-  SMTP_PORT: Number(process.env.SMTP_PORT),
-  SMTP_SERVICE: process.env.SMTP_SERVICE,
-  SMTP_MAIL: process.env.SMTP_MAIL,
-  SMTP_PASSWORD: process.env.SMTP_PASSWORD,
+const getEnv = (key: string, defaultValue?: string): string => {
+  const value = process.env[key];
+  if (!value) {
+    if (defaultValue !== undefined) {
+      return defaultValue;
+    }
+    throw new Error(`Missing environment variable ${key}`);
+  }
+  return value;
 }
 
 export interface ISendMail {
@@ -25,6 +28,13 @@ export const sendMail = async ({
   template,
   data,
 }: ISendMail): Promise<void> => {
+  const config = {
+    SMTP_HOST: getEnv("SMTP_HOST"),
+    SMTP_PORT: Number(getEnv("SMTP_PORT")),
+    SMTP_SERVICE: getEnv("SMTP_SERVICE"),
+    SMTP_MAIL: getEnv("SMTP_MAIL"),
+    SMTP_PASSWORD: getEnv("SMTP_PASSWORD"),
+  }
   const transporter: Transporter = nodeMailer.createTransport({
     host: config.SMTP_HOST,
     port: config.SMTP_PORT,

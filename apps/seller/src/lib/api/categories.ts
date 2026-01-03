@@ -17,7 +17,16 @@ export const useCreateCategory = () => {
   })
 };
 
-export const useGetCategories = (params?: { page?: number; limit?: number; q?: string; sort?: string, select?: string }) => {
+interface CategoryQueryParams {
+  page?: number;
+  limit?: number;
+  q?: string;
+  sort?: string;
+  select?: string;
+  status?: "active" | "inactive" | "all";
+}
+
+export const useGetCategories = (params?: CategoryQueryParams) => {
   return useQuery({
     queryKey: ["categories", params],
     queryFn: async () => {

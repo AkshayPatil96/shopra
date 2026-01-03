@@ -1,3 +1,6 @@
+import dotenv from 'dotenv';
+dotenv.config();
+
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
 import { JsonWebTokenError, ValidationError } from '@repo/error-handler';
@@ -16,10 +19,12 @@ import {
   findSellerByEmailWithPassword,
   findSellerById,
   updateSellerPassword,
-  aggregateSellerProfile,
   createShopRecord,
 } from '../../repositories/seller.repository.js';
 import { issueAuthTokens, verifyRefreshToken } from '../../infra/jwt.js';
+import { toSellerDTO, toSellerProfileDTO } from './sellerAuth.types.js';
+import type { SellerWithShops } from './sellerAuth.types.js';
+import { aggregateSellerProfile } from '@repo/db-mongodb';
 
 const SELLER_FRONTEND_URL = process.env.SELLER_FRONTEND_URL || 'http://localhost:8001';
 
@@ -40,12 +45,17 @@ export const requestSellerRegistration = async ({ name, email }: { name: string;
 
   const otp = generateOtp();
 
-  await sendMail({
-    email,
-    subject: 'Welcome! Activate Your Account',
-    template: 'seller-activation-mail.ejs',
-    data: { user: { name: formatName(name) }, otp },
-  });
+  try {
+    await sendMail({
+      email,
+      subject: 'Welcome! Activate Your Account',
+      template: 'seller-activation-mail.ejs',
+      data: { user: { name: formatName(name) }, otp },
+    });
+  } catch (error) {
+    console.error('Error sending seller activation email:', error);
+    throw new Error('Failed to send OTP email. Please try again later.');
+  }
 
   await storeSellerOtp(email, otp);
 };
@@ -71,7 +81,9 @@ export const verifySellerAccount = async ({
   const seller = await createSeller({ email, name, password: hashedPassword, phone, country });
   const tokens = issueAuthTokens(seller._id.toString(), 'seller');
 
-  return { seller, tokens, role: 'seller' as const };
+  const sellerDTO = toSellerDTO(seller);
+
+  return { seller: sellerDTO, tokens, role: 'seller' as const };
 };
 
 export const loginSellerAccount = async ({ email, password }: { email: string; password: string }) => {
@@ -91,7 +103,9 @@ export const loginSellerAccount = async ({ email, password }: { email: string; p
 
   const tokens = issueAuthTokens(seller._id.toString(), 'seller');
 
-  return { seller, tokens, role: 'seller' as const };
+  const sellerDTO = toSellerDTO(seller);
+
+  return { seller: sellerDTO, tokens, role: 'seller' as const };
 };
 
 export const refreshSellerSession = async (token?: string) => {
@@ -113,7 +127,9 @@ export const refreshSellerSession = async (token?: string) => {
 
   const tokens = issueAuthTokens(seller._id.toString(), 'seller');
 
-  return { seller, tokens, role: 'seller' as const };
+  const sellerDTO = toSellerDTO(seller);
+
+  return { seller: sellerDTO, tokens, role: 'seller' as const };
 };
 
 export const initiateSellerPasswordReset = async (email: string) => {
@@ -175,13 +191,14 @@ export const getSellerProfileData = async (sellerId?: string) => {
     throw new ValidationError('Seller not authenticated');
   }
 
-  const sellerData = await aggregateSellerProfile(sellerId);
+  const sellerData = await aggregateSellerProfile(sellerId) ?? null;
+  const sellerProfile = Array.isArray(sellerData) ? sellerData[0] : sellerData;
 
-  if (!sellerData) {
+  if (!sellerProfile) {
     throw new ValidationError('Seller not authenticated');
   }
 
-  return sellerData;
+  return toSellerProfileDTO(sellerProfile as SellerWithShops);
 };
 
 export const createSellerShop = async ({

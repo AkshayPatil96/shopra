@@ -3,10 +3,13 @@ import type { findBrandById, findBrands } from "../../repositories/index.js";
 
 export type BrandSort = "name_asc" | "name_desc" | "createdAt_asc" | "createdAt_desc";
 
+export type BrandStatusFilter = "active" | "inactive" | "all";
+
 export interface BrandListQuery {
   q?: string;
   sort?: BrandSort;
   select?: "options";
+  status?: BrandStatusFilter;
 }
 
 export type BrandOptionDTO = {
@@ -27,15 +30,33 @@ const brandSortMap: Record<BrandSort, BrandSortableFields> = {
   createdAt_desc: { createdAt: "desc" },
 };
 
-export const buildBrandFilter = (search?: string): Record<string, unknown> => {
-  if (!search) return {};
+const shouldFilterByStatus = (status?: BrandStatusFilter): status is "active" | "inactive" =>
+  status === "active" || status === "inactive";
 
-  return {
-    OR: [
-      { name: { contains: search, mode: "insensitive" } },
-      { slug: { contains: search, mode: "insensitive" } },
-    ],
-  };
+export const buildBrandFilter = (
+  search?: string,
+  status?: BrandStatusFilter
+): Record<string, unknown> => {
+  const filters: Record<string, unknown>[] = [];
+
+  if (shouldFilterByStatus(status)) {
+    filters.push({ isActive: status === "active" });
+  }
+
+  if (search) {
+    filters.push({
+      OR: [
+        { name: { contains: search, mode: "insensitive" } },
+        { slug: { contains: search, mode: "insensitive" } },
+      ],
+    });
+  }
+
+  if (!filters.length) {
+    return {};
+  }
+
+  return filters.length === 1 ? filters[0]! : { AND: filters };
 };
 
 export const mapBrandSort = (sort?: BrandSort): BrandSortableFields | undefined =>
@@ -48,6 +69,7 @@ export const toBrandDTO = (brand: BrandEntity | BrandListEntity): BrandDTO => ({
   logoUrl: brand.logoUrl ?? undefined,
   createdAt: brand.createdAt instanceof Date ? brand.createdAt.toISOString() : String(brand.createdAt),
   updatedAt: brand.updatedAt instanceof Date ? brand.updatedAt.toISOString() : String(brand.updatedAt),
+  isActive: brand.isActive ?? true,
 });
 
 export const toBrandOptionDTO = (brand: { id: string; name: string }): BrandOptionDTO => ({

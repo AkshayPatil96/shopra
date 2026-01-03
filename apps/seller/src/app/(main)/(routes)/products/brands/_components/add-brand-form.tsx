@@ -16,21 +16,9 @@ import {
 
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
-import {
-  CategoryFormDTO,
-  CategoryFormSchema,
-  CreateBrandDTO,
-  CreateBrandSchema,
-} from "@repo/shared-types";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
+import type { z } from "zod";
+import { CreateBrandDTO, CreateBrandSchema } from "@repo/shared-types";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { useCreateBrand, useUpdateBrand } from "@/lib/api/brands";
@@ -45,21 +33,15 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Field } from "@/components/ui/field";
 import { PlusIcon } from "lucide-react";
 
-// ❗ Replace with actual API & your categories fetch
-const mockCategories = [
-  { value: "cat_men", label: "Men Clothing" },
-  { value: "cat_women", label: "Women Clothing" },
-  { value: "cat_electronics", label: "Electronics" },
-];
+type BrandFormValues = z.infer<typeof CreateBrandSchema>;
 
 export default function AddBrandForm({
   brand,
   id,
 }: {
-  brand?: CreateBrandDTO;
+  brand?: BrandFormValues;
   id?: string;
 }) {
   const router = useRouter();
@@ -67,12 +49,13 @@ export default function AddBrandForm({
 
   const [dialogOpen, setDialogOpen] = useState(false);
 
-  const form = useForm<CreateBrandDTO>({
+  const form = useForm<BrandFormValues | any>({
     resolver: zodResolver(CreateBrandSchema),
     defaultValues: {
       name: "",
       slug: "",
       logoUrl: null,
+      isActive: true,
     },
   });
 
@@ -99,7 +82,7 @@ export default function AddBrandForm({
 
   const updateBrand = useUpdateBrand();
 
-  const onSubmit = async (values: CreateBrandDTO) => {
+  const onSubmit = async (values: BrandFormValues) => {
     console.log("Submitting brand:", values);
 
     if (isEditMode && id) {
@@ -201,6 +184,29 @@ export default function AddBrandForm({
                   )}
                 />
 
+                {/* Status */}
+                <FormField
+                  control={form.control}
+                  name="isActive"
+                  render={({ field }) => (
+                    <FormItem className="flex items-center justify-between rounded-xl border p-4">
+                      <div className="space-y-1">
+                        <FormLabel>Active</FormLabel>
+                        <FormDescription>
+                          Disable to keep this brand hidden from storefronts.
+                        </FormDescription>
+                      </div>
+                      <FormControl>
+                        <Switch
+                          checked={Boolean(field.value)}
+                          onCheckedChange={field.onChange}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
                 {/* Icon URL */}
                 {/* <FormField
                   control={form.control}
@@ -233,7 +239,7 @@ export default function AddBrandForm({
                     Cancel
                   </DialogClose>
                   <Button type="submit">
-                    {isEditMode ? "Update Category" : "Create Category"}
+                    {isEditMode ? "Update Brand" : "Create Brand"}
                   </Button>
                 </DialogFooter>
               </form>

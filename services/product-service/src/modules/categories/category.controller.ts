@@ -27,12 +27,37 @@ const toNumber = (value: unknown): number | undefined => {
   return undefined;
 };
 
+const parseStatusParam = (value: unknown): CategoryListParams["status"] => {
+  if (typeof value === "boolean") {
+    return value ? "active" : "inactive";
+  }
+
+  if (typeof value === "string") {
+    const normalized = value.toLowerCase();
+
+    if (normalized === "true" || normalized === "active") {
+      return "active";
+    }
+
+    if (normalized === "false" || normalized === "inactive") {
+      return "inactive";
+    }
+
+    if (normalized === "all") {
+      return "all";
+    }
+  }
+
+  return undefined;
+};
+
 const parseCategoryQuery = (query: Request["query"]): CategoryListParams => ({
   q: typeof query.q === "string" ? query.q : undefined,
   sort: typeof query.sort === "string" ? (query.sort as CategoryListParams["sort"]) : undefined,
   page: toNumber(query.page) ?? 1,
   limit: toNumber(query.limit) ?? DEFAULT_CATEGORY_LIMIT,
   select: query.select === "options" ? "options" : undefined,
+  status: parseStatusParam(query.status ?? query.isActive) ?? "active",
 });
 
 export const createCategory: RequestHandler = asyncHandler(

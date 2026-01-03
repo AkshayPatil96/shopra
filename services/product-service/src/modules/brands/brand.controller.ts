@@ -9,10 +9,35 @@ import {
 } from "./brand.service.js";
 import type { BrandListQuery } from "./brand.types.js";
 
+const parseStatusParam = (value: unknown): BrandListQuery["status"] => {
+  if (typeof value === "boolean") {
+    return value ? "active" : "inactive";
+  }
+
+  if (typeof value === "string") {
+    const normalized = value.toLowerCase();
+
+    if (normalized === "true" || normalized === "active") {
+      return "active";
+    }
+
+    if (normalized === "false" || normalized === "inactive") {
+      return "inactive";
+    }
+
+    if (normalized === "all") {
+      return "all";
+    }
+  }
+
+  return undefined;
+};
+
 const parseBrandQuery = (query: Request["query"]): BrandListQuery => ({
   q: typeof query.q === "string" ? query.q : undefined,
   sort: typeof query.sort === "string" ? (query.sort as BrandListQuery["sort"]) : undefined,
   select: query.select === "options" ? "options" : undefined,
+  status: parseStatusParam(query.status ?? query.isActive) ?? "active",
 });
 
 // CREATE

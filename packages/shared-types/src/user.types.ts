@@ -19,3 +19,14 @@ export interface User {
   createdAt: Date;
   updatedAt: Date;
 }
+
+export interface UserDTO {
+  id: string;
+  email: string;
+  name: string;
+  avatarId?: string;
+  following: string[];
+  status: UserStatus;
+  createdAt: string;
+  updatedAt: string;
+}
