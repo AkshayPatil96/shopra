@@ -8,6 +8,7 @@ import { requestIdMiddleware, errorMiddleware } from "@repo/shared-middleware";
 import swaggerDocument from "./swagger-output.json" with { type: "json" };
 import { brandRoutes } from "./modules/brands/index.js";
 import { categoryRoutes } from "./modules/categories/index.js";
+import { productRoutes } from "./modules/products/index.js";
 
 const frontendUrl = process.env.FRONTEND_URL || "http://localhost:8000";
 const sellerFrontendUrl = process.env.SELLER_FRONTEND_URL || "http://localhost:8001";
@@ -37,6 +38,7 @@ app.get("/docs-json", (_req: Request, res: Response) => {
 
 app.use("/brands", brandRoutes);
 app.use("/categories", categoryRoutes);
+app.use("/products", productRoutes);
 
 app.use(errorMiddleware(serviceName));
 

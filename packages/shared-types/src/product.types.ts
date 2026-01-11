@@ -1,5 +1,9 @@
 import { z } from "zod";
 
+export const PRODUCT_STATUS_VALUES = ["ACTIVE", "INACTIVE", "DRAFT", "ARCHIVED"] as const;
+export const ProductStatusSchema = z.enum(PRODUCT_STATUS_VALUES);
+export type ProductStatus = z.infer<typeof ProductStatusSchema>;
+
 export const VariantAttributeSchema = z.object({
   key: z.string().min(1, "Attribute key is required"),
   values: z.array(z.string().min(1)).min(1, "At least one value"),
@@ -88,10 +92,12 @@ export type VariantAttributeValues = z.infer<typeof VariantAttributeSchema>;
 // ===========================================================
 
 export const VariantZ = z.object({
+  id: z.string().optional(),
   sku: z.string().optional(),
   price: z.number().min(0).optional(),
   compareAtPrice: z.number().min(0).optional(),
   stock: z.number().int().min(0).optional(),
+  status: ProductStatusSchema.optional(),
   attributes: z.record(z.string(), z.any()).optional(),
 });
 
@@ -103,11 +109,55 @@ export const CreateProductZ = z.object({
   summary: z.string().optional(),
   price: z.number().min(0).optional(),
   compareAtPrice: z.number().min(0).optional(),
-  categoryId: z.string().optional(),
+  categoryId: z.string().min(1, "Category is required"),
   brandId: z.string().optional(),
+  shopId: z.string().min(1, "Shop is required"),
+  status: ProductStatusSchema.optional(),
   imageIds: z.array(z.string()).optional(),
-  variants: z.array(VariantZ).min(1).optional(), // allow 0 or 1 variants too if you want
+  variants: z.array(VariantZ).min(1, "At least one variant is required"),
 });
 
 export type CreateProductDTO = z.infer<typeof CreateProductZ>;
 export type VariantDTO = z.infer<typeof VariantZ>;
+
+export const UpdateProductZ = CreateProductZ.partial().extend({
+  shopId: z.string().min(1, "Shop is required"),
+});
+
+export type UpdateProductDTO = z.infer<typeof UpdateProductZ>;
+
+export interface ProductVariantDTO {
+  id: string;
+  sku?: string | null;
+  price?: number | null;
+  compareAtPrice?: number | null;
+  stock: number;
+  status: ProductStatus;
+  attributes?: Record<string, unknown> | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ProductDTO {
+  id: string;
+  title: string;
+  slug: string;
+  description?: string | null;
+  summary?: string | null;
+  price?: number | null;
+  compareAtPrice?: number | null;
+  stock: number;
+  inStock: boolean;
+  status: ProductStatus;
+  shopId: string;
+  categoryId: string;
+  categoryName?: string | null;
+  brandId?: string | null;
+  brandName?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ProductDetailDTO extends ProductDTO {
+  variants: ProductVariantDTO[];
+}
