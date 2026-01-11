@@ -18,6 +18,7 @@ const AUTH_PAGES = [
 const DASHBOARD_PAGE = "/dashboard";
 const PENDING_PAGE = "/onboarding";
 const SUSPENDED_PAGE = "/suspended";
+const TOKEN_STALE_WINDOW_SECONDS = 60;
 
 /* -------------------------------------------------------
    MAIN MIDDLEWARE
@@ -29,15 +30,22 @@ export async function proxy(req: NextRequest) {
   /* -------------------------------------
      1️⃣ Detect access token (PRIMARY AUTH)
   ------------------------------------- */
-  const hasAccessToken = req.cookies.has("access_token_seller");
+  const accessToken = req.cookies.get("access_token_seller")?.value;
+  const tokenFreshness = getTokenFreshness(accessToken);
+  const shouldAttemptRefresh =
+    tokenFreshness === "missing" ||
+    tokenFreshness === "expired" ||
+    tokenFreshness === "stale";
 
   /* -------------------------------------
      2️⃣ Try refresh ONLY if needed
   ------------------------------------- */
-  const refresh = hasAccessToken ? null : await tryRefresh(req);
+  const refresh = shouldAttemptRefresh ? await tryRefresh(req) : null;
 
   const isAuthenticated =
-    hasAccessToken || refresh?.authenticated === true;
+    tokenFreshness === "valid" ||
+    tokenFreshness === "stale" ||
+    refresh?.authenticated === true;
 
   /* -------------------------------------
      3️⃣ Resolve user status
@@ -172,3 +180,33 @@ function redirectWithCookies(
 export const config = {
   matcher: ["/((?!_next|favicon.ico|public).*)"],
 };
+
+type TokenFreshness = "missing" | "expired" | "stale" | "valid";
+
+function getTokenFreshness(token?: string): TokenFreshness {
+  if (!token) return "missing";
+
+  const exp = extractJwtExp(token);
+  if (!exp) return "valid";
+
+  const now = Math.floor(Date.now() / 1000);
+  if (exp <= now) return "expired";
+  if (exp - now <= TOKEN_STALE_WINDOW_SECONDS) return "stale";
+  return "valid";
+}
+
+function extractJwtExp(token: string): number | null {
+  const [, payload] = token.split(".");
+  if (!payload) return null;
+
+  try {
+    const normalized = payload.replace(/-/g, "+").replace(/_/g, "/");
+    const padLength = (4 - (normalized.length % 4)) % 4;
+    const padded = normalized.padEnd(normalized.length + padLength, "=");
+    const decoded = atob(padded);
+    const parsed = JSON.parse(decoded);
+    return typeof parsed.exp === "number" ? parsed.exp : null;
+  } catch {
+    return null;
+  }
+}

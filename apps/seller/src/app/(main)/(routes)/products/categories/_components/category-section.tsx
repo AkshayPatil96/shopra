@@ -19,19 +19,16 @@ const CategorySection = () => {
   const q = searchParams.get("q") || "";
   const sort = searchParams.get("sort") || "";
   const limit = Number(searchParams.get("limit")) || 10;
-  const status = (searchParams.get("status") as "active" | "inactive" | "all") || "active";
+  const status =
+    (searchParams.get("status") as "active" | "inactive" | "all") || "all";
 
-  const { data, isLoading } = useGetCategories({ page, q, sort, limit, status }) as any;
-
-  const handleStatusChange = (nextStatus: "active" | "inactive" | "all") => {
-    if (nextStatus === status) return;
-
-    const params = new URLSearchParams(searchParams);
-    params.set("status", nextStatus);
-    params.set("page", "1");
-
-    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
-  };
+  const { data, isLoading } = useGetCategories({
+    page,
+    q,
+    sort,
+    limit,
+    status,
+  }) as any;
 
   return (
     <div className="">
@@ -42,7 +39,7 @@ const CategorySection = () => {
         />
 
         <div className="flex items-center gap-2">
-          {(["active", "inactive", "all"] as const).map((value) => (
+          {/* {(["active", "inactive", "all"] as const).map((value) => (
             <Button
               key={value}
               type="button"
@@ -56,7 +53,7 @@ const CategorySection = () => {
                 ? "Active"
                 : "Inactive"}
             </Button>
-          ))}
+          ))} */}
 
           <Link href="/products/categories/add">
             <Button className="flex items-center">

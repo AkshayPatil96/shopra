@@ -37,7 +37,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { SellerAuthAPI } from "@repo/shared-axios";
 import { toast } from "sonner";
 import useSeller from "@/hooks/useUser";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 
 const menu = [
   { title: "Dashboard", icon: LayoutDashboard, href: "/dashboard" },
@@ -52,13 +52,7 @@ const menu = [
     title: "Products",
     menuItems: [
       { title: "All Products", icon: FileText, href: "/products" },
-      { title: "Add Product", icon: Activity, href: "/products/add" },
       { title: "Categories", icon: Database, href: "/products/categories" },
-      {
-        title: "Add Category",
-        icon: Database,
-        href: "/products/categories/add",
-      },
       {
         title: "Brands",
         icon: BarChart3,
@@ -91,6 +85,7 @@ const menu = [
 
 export const SellerSidebar = memo(() => {
   const router = useRouter();
+  const pathname = usePathname();
   const { theme, setTheme } = useTheme();
   const { seller, refetch, isLoading, isError } = useSeller();
   const queryClient = useQueryClient();
@@ -174,8 +169,16 @@ export const SellerSidebar = memo(() => {
                   {"menuItems" in section
                     ? section.menuItems.map((item) => {
                         const Icon = item.icon;
+
                         return (
-                          <SidebarMenuItem key={item.href}>
+                          <SidebarMenuItem
+                            key={item.href}
+                            className={`
+                          ${
+                            pathname === item.href ? "bg-accent rounded-lg" : ""
+                          }
+                              `}
+                          >
                             <SidebarMenuButton asChild>
                               <Link
                                 prefetch={false}

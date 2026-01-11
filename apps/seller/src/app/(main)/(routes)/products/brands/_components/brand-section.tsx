@@ -1,17 +1,17 @@
 "use client";
 
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import SectionHeader from "@/components/widgets/section-heeader";
-import { useGetBrands } from "@/lib/api/brands";
+import { useGetBrandById, useGetBrands } from "@/lib/api/brands";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import React from "react";
+import { PlusIcon } from "lucide-react";
+import { Brand } from "@repo/shared-types";
 import { BrandTable } from "./brand-table";
-import { BrandColumns } from "./columns";
-import AddBrandForm from "./add-brand-form";
+import { getBrandColumns } from "./columns";
+import BrandFormModal from "./brand-form-modal";
 
-type Props = { [key: string]: string | string[] | undefined };
-
-const BrandSection = ({ query }: { query: Props }) => {
+const BrandSection = () => {
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
@@ -20,19 +20,88 @@ const BrandSection = ({ query }: { query: Props }) => {
   const q = searchParams.get("q") || "";
   const sort = searchParams.get("sort") || "";
   const limit = Number(searchParams.get("limit")) || 10;
-  const status = (searchParams.get("status") as "active" | "inactive" | "all") || "active";
+  const status =
+    (searchParams.get("status") as "active" | "inactive" | "all") || "all";
 
-  const { data, isLoading } = useGetBrands({ page, q, sort, limit, status }) as any;
+  const { data, isLoading } = useGetBrands({
+    page,
+    q,
+    sort,
+    limit,
+    status,
+  }) as any;
 
-  const handleStatusChange = (nextStatus: "active" | "inactive" | "all") => {
-    if (status === nextStatus) return;
+  const modalType = searchParams.get("modal") as "add" | "edit" | null;
+  const modalBrandId = searchParams.get("brandId");
 
+  const [activeBrand, setActiveBrand] = useState<Brand | undefined>(undefined);
+
+  const openModal = useCallback(
+    (type: "add" | "edit", brandId?: string) => {
+      const params = new URLSearchParams(searchParams);
+      params.set("modal", type);
+      if (brandId) {
+        params.set("brandId", brandId);
+      } else {
+        params.delete("brandId");
+      }
+
+      router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+    },
+    [pathname, router, searchParams],
+  );
+
+  const closeModal = useCallback(() => {
     const params = new URLSearchParams(searchParams);
-    params.set("status", nextStatus);
-    params.set("page", "1");
-
+    params.delete("modal");
+    params.delete("brandId");
     router.replace(`${pathname}?${params.toString()}`, { scroll: false });
-  };
+  }, [pathname, router, searchParams]);
+
+  const brands: Brand[] = data?.data || [];
+  const selectedBrand = useMemo(
+    () => brands.find((brand) => brand.id === modalBrandId),
+    [brands, modalBrandId],
+  );
+
+  const shouldFetchBrand =
+    modalType === "edit" && Boolean(modalBrandId) && !selectedBrand;
+
+  const { data: fetchedBrandResponse, isLoading: isFetchingBrand } =
+    useGetBrandById(modalBrandId, {
+      enabled: shouldFetchBrand,
+    });
+
+  useEffect(() => {
+    if (modalType !== "edit") {
+      setActiveBrand(undefined);
+      return;
+    }
+
+    if (selectedBrand) {
+      setActiveBrand(selectedBrand);
+    }
+  }, [modalType, selectedBrand]);
+
+  useEffect(() => {
+    if (modalType !== "edit") return;
+
+    const fetchedBrand = (fetchedBrandResponse ?? fetchedBrandResponse) as
+      | Brand
+      | undefined;
+    if (fetchedBrand) {
+      setActiveBrand(fetchedBrand);
+    }
+  }, [modalType, fetchedBrandResponse]);
+
+  const handleAddBrand = useCallback(() => {
+    setActiveBrand(undefined);
+    openModal("add");
+  }, [openModal]);
+
+  const columns = useMemo(() => getBrandColumns(), []);
+
+  const isModalOpen = modalType === "add" || modalType === "edit";
 
   return (
     <div className="">
@@ -43,33 +112,29 @@ const BrandSection = ({ query }: { query: Props }) => {
         />
 
         <div className="flex items-center gap-2">
-          {(["active", "inactive", "all"] as const).map((value) => (
-            <Button
-              key={value}
-              type="button"
-              size="sm"
-              variant={status === value ? "default" : "outline"}
-              onClick={() => handleStatusChange(value)}
-            >
-              {value === "all"
-                ? "All"
-                : value === "active"
-                ? "Active"
-                : "Inactive"}
-            </Button>
-          ))}
-
-          <AddBrandForm />
+          <Button onClick={handleAddBrand}>
+            <PlusIcon />
+            Add Brand
+          </Button>
         </div>
       </div>
 
       <BrandTable
-        columns={BrandColumns}
-        data={data?.data || []}
+        columns={columns}
+        data={brands}
         total={data?.total || 0}
         totalPages={data?.totalPages || 1}
         page={page}
+        limit={limit}
         isLoading={isLoading}
+      />
+
+      <BrandFormModal
+        mode={modalType}
+        brand={modalType === "edit" ? activeBrand : undefined}
+        isOpen={isModalOpen}
+        isLoading={modalType === "edit" && isFetchingBrand && !activeBrand}
+        onClose={closeModal}
       />
     </div>
   );

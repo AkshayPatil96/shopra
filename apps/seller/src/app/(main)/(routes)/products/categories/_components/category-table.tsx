@@ -28,7 +28,7 @@ import {
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useDebounce } from "@/hooks/useDebounce";
-import { XIcon } from "lucide-react";
+import { ChevronsUpDown, XIcon } from "lucide-react";
 import { Category } from "@repo/shared-types";
 
 interface Props {
@@ -54,6 +54,8 @@ export function CategoryTable({
 
   const q = searchParams.get("q") || "";
   const sort = searchParams.get("sort") || "";
+  const status =
+    (searchParams.get("status") as "active" | "inactive" | "all") || "all";
 
   const [searchInput, setSearchInput] = useState(q);
   const debouncedSearch = useDebounce(searchInput, 500);
@@ -97,6 +99,15 @@ export function CategoryTable({
     router.push(`${pathname}?${params.toString()}`);
   };
 
+  const handleStatusChange = (nextStatus: "active" | "inactive" | "all") => {
+    if (status === nextStatus) return;
+
+    const params = new URLSearchParams(searchParams);
+    params.set("status", nextStatus);
+    params.set("page", "1");
+    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+  };
+
   // 📄 Pagination handler
   const goToPage = (page: number) => {
     const params = new URLSearchParams(searchParams);
@@ -128,24 +139,56 @@ export function CategoryTable({
           )}
         </div>
 
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline">Columns</Button>
-          </DropdownMenuTrigger>
+        <div className="flex items-center gap-2">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline">
+                Status: <span className="capitalize">{status}</span>
+                <ChevronsUpDown className="text-muted-foreground" />
+              </Button>
+            </DropdownMenuTrigger>
 
-          <DropdownMenuContent align="end">
-            {table.getAllLeafColumns().map((column) => (
+            <DropdownMenuContent align="end">
               <DropdownMenuCheckboxItem
-                key={column.id}
-                checked={column.getIsVisible()}
-                onCheckedChange={(v) => column.toggleVisibility(!!v)}
-                className="capitalize"
+                checked={status === "all"}
+                onCheckedChange={() => handleStatusChange("all")}
               >
-                {column.id}
+                All
               </DropdownMenuCheckboxItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
+              <DropdownMenuCheckboxItem
+                checked={status === "active"}
+                onCheckedChange={() => handleStatusChange("active")}
+              >
+                Active
+              </DropdownMenuCheckboxItem>
+              <DropdownMenuCheckboxItem
+                checked={status === "inactive"}
+                onCheckedChange={() => handleStatusChange("inactive")}
+              >
+                Inactive
+              </DropdownMenuCheckboxItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline">Columns</Button>
+            </DropdownMenuTrigger>
+
+            <DropdownMenuContent align="end">
+              {table.getAllLeafColumns().map((column) => (
+                <DropdownMenuCheckboxItem
+                  key={column.id}
+                  checked={column.getIsVisible()}
+                  onCheckedChange={(v) => column.toggleVisibility(!!v)}
+                  className="capitalize"
+                >
+                  {column.id}
+                </DropdownMenuCheckboxItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </div>
 
       {/* 🧱 Table */}

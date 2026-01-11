@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Josefin_Sans, Poppins, Rubik } from "next/font/google";
+import { Josefin_Sans, Poppins, Rubik, Bebas_Neue } from "next/font/google";
 import "./styles/globals.css";
 import { ThemeProvider } from "next-themes";
 // import Providers from "./Providers";
@@ -18,11 +18,12 @@ const rubik = Rubik({
   variable: "--font-rubik",
 });
 
-const geistJosefin = Josefin_Sans({
+const geistJosefin = Bebas_Neue({
   subsets: ["latin"],
   variable: "--font-josefin",
   display: "swap",
-  weight: ["300", "400", "500", "600", "700"],
+  weight: ["400"],
+  // weight: ["400", "500", "600", "700"],
 });
 
 export const metadata: Metadata = {

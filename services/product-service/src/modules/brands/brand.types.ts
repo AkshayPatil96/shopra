@@ -1,7 +1,13 @@
 import type { Brand as BrandDTO } from "@repo/shared-types";
 import type { findBrandById, findBrands } from "../../repositories/index.js";
 
-export type BrandSort = "name_asc" | "name_desc" | "createdAt_asc" | "createdAt_desc";
+export type BrandSort =
+  | "name_asc"
+  | "name_desc"
+  | "status_asc"
+  | "status_desc"
+  | "createdAt_asc"
+  | "createdAt_desc";
 
 export type BrandStatusFilter = "active" | "inactive" | "all";
 
@@ -21,11 +27,13 @@ type BrandEntity = NonNullable<Awaited<ReturnType<typeof findBrandById>>>;
 type BrandCollection = Awaited<ReturnType<typeof findBrands>>;
 type BrandListEntity = BrandCollection extends Array<infer U> ? U : never;
 
-type BrandSortableFields = Record<string, "asc" | "desc">;
+type BrandSortableFields = Record<string, "asc" | "desc"> | Array<Record<string, "asc" | "desc">>;
 
 const brandSortMap: Record<BrandSort, BrandSortableFields> = {
   name_asc: { name: "asc" },
   name_desc: { name: "desc" },
+  status_asc: [{ isActive: "asc" }, { name: "asc" }],
+  status_desc: [{ isActive: "desc" }, { name: "asc" }],
   createdAt_asc: { createdAt: "asc" },
   createdAt_desc: { createdAt: "desc" },
 };

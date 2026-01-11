@@ -8,7 +8,6 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-
 import {
   Table,
   TableBody,
@@ -26,10 +25,17 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useDebounce } from "@/hooks/useDebounce";
-import { XIcon } from "lucide-react";
+import {
+  ArrowDown,
+  ArrowUp,
+  ArrowUpDown,
+  ChevronsUpDown,
+  XIcon,
+} from "lucide-react";
 import { Brand } from "@repo/shared-types";
+import { TablePagination } from "@/components/widgets/table-pagination";
 
 interface Props {
   columns: ColumnDef<Brand>[];
@@ -38,7 +44,10 @@ interface Props {
   page: number;
   total: number;
   isLoading: boolean;
+  limit?: number;
 }
+
+const PAGE_SIZE_OPTIONS = [10, 20, 50, 100];
 
 export function BrandTable({
   columns,
@@ -47,16 +56,28 @@ export function BrandTable({
   page,
   total,
   isLoading,
+  limit,
 }: Props) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const pathname = usePathname();
+  const pageSize = limit ?? PAGE_SIZE_OPTIONS[0];
 
   const q = searchParams.get("q") || "";
   const sort = searchParams.get("sort") || "";
+  const status =
+    (searchParams.get("status") as "active" | "inactive" | "all") || "all";
+  const [sortColumn, sortDirection] = sort.includes("_")
+    ? (sort.split("_") as [string, "asc" | "desc"])
+    : [undefined, undefined];
 
   const [searchInput, setSearchInput] = useState(q);
   const debouncedSearch = useDebounce(searchInput, 500);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    setSearchInput(q);
+  }, [q]);
 
   const table = useReactTable({
     data,
@@ -75,24 +96,68 @@ export function BrandTable({
     params.set("q", debouncedSearch);
     params.set("page", "1");
 
-    // router.push(`${pathname}?${params.toString()}`);
     router.replace(`${pathname}?${params.toString()}`, { scroll: false });
   }, [debouncedSearch]);
 
-  // 🔽 Sort handler (name, createdAt)
-  const handleSort = (columnId: string, direction: "asc" | "desc") => {
+  useEffect(() => {
+    if (inputRef.current) {
+      inputRef.current.focus();
+      const value = inputRef.current.value;
+      inputRef.current.setSelectionRange(value.length, value.length);
+    }
+  }, [q]);
+
+  const sortableColumns = new Set(["name", "status", "createdAt"]);
+
+  const buildSortKey = (columnId: string, direction: "asc" | "desc") => {
+    switch (columnId) {
+      case "name":
+        return `name_${direction}`;
+      case "status":
+        return `status_${direction}`;
+      case "createdAt":
+        return `createdAt_${direction}`;
+      default:
+        return "";
+    }
+  };
+
+  const handleSort = (columnId: string) => {
+    if (!sortableColumns.has(columnId)) return;
+
+    const isSameColumn = sortColumn === columnId;
+    const nextDirection: "asc" | "desc" =
+      isSameColumn && sortDirection === "asc" ? "desc" : "asc";
+    const sortKey = buildSortKey(columnId, nextDirection);
+
+    if (!sortKey) return;
+
     const params = new URLSearchParams(searchParams);
-
-    const sortKey =
-      columnId === "name"
-        ? `name_${direction}`
-        : columnId === "createdAt"
-        ? `createdAt_${direction}`
-        : "";
-
-    if (sortKey) params.set("sort", sortKey);
-
+    params.set("sort", sortKey);
     router.push(`${pathname}?${params.toString()}`);
+  };
+
+  const renderSortIcon = (columnId: string) => {
+    if (!sortableColumns.has(columnId)) return null;
+
+    if (sortColumn !== columnId) {
+      return <ArrowUpDown className="ml-1 h-3.5 w-3.5 text-muted-foreground" />;
+    }
+
+    return sortDirection === "asc" ? (
+      <ArrowUp className="ml-1 h-3.5 w-3.5 text-muted-foreground" />
+    ) : (
+      <ArrowDown className="ml-1 h-3.5 w-3.5 text-muted-foreground" />
+    );
+  };
+
+  const handleStatusChange = (nextStatus: "active" | "inactive" | "all") => {
+    if (status === nextStatus) return;
+
+    const params = new URLSearchParams(searchParams);
+    params.set("status", nextStatus);
+    params.set("page", "1");
+    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
   };
 
   // 📄 Pagination handler
@@ -100,6 +165,15 @@ export function BrandTable({
     const params = new URLSearchParams(searchParams);
     params.set("page", String(page));
     router.push(`${pathname}?${params.toString()}`);
+  };
+
+  const handleLimitChange = (nextLimit: number) => {
+    if (!Number.isFinite(nextLimit) || nextLimit === pageSize) return;
+
+    const params = new URLSearchParams(searchParams);
+    params.set("limit", String(nextLimit));
+    params.set("page", "1");
+    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
   };
 
   if (isLoading) return <div className="text-center py-10">Loading...</div>;
@@ -115,6 +189,7 @@ export function BrandTable({
             className="max-w-xs"
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
+            ref={inputRef}
           />
           {searchInput && (
             <XIcon
@@ -126,24 +201,59 @@ export function BrandTable({
           )}
         </div>
 
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline">Columns</Button>
-          </DropdownMenuTrigger>
+        <div className="flex items-center gap-2">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline">
+                Status: <span className="capitalize">{status}</span>
+                <ChevronsUpDown className="text-muted-foreground" />
+              </Button>
+            </DropdownMenuTrigger>
 
-          <DropdownMenuContent align="end">
-            {table.getAllLeafColumns().map((column) => (
+            <DropdownMenuContent align="end">
               <DropdownMenuCheckboxItem
-                key={column.id}
-                checked={column.getIsVisible()}
-                onCheckedChange={(v) => column.toggleVisibility(!!v)}
-                className="capitalize"
+                checked={status === "all"}
+                onCheckedChange={() => handleStatusChange("all")}
               >
-                {column.id}
+                All
               </DropdownMenuCheckboxItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
+              <DropdownMenuCheckboxItem
+                checked={status === "active"}
+                onCheckedChange={() => handleStatusChange("active")}
+              >
+                Active
+              </DropdownMenuCheckboxItem>
+              <DropdownMenuCheckboxItem
+                checked={status === "inactive"}
+                onCheckedChange={() => handleStatusChange("inactive")}
+              >
+                Inactive
+              </DropdownMenuCheckboxItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline">
+                Columns
+                <ChevronsUpDown className="text-muted-foreground" />
+              </Button>
+            </DropdownMenuTrigger>
+
+            <DropdownMenuContent align="end">
+              {table.getAllLeafColumns().map((column) => (
+                <DropdownMenuCheckboxItem
+                  key={column.id}
+                  checked={column.getIsVisible()}
+                  onCheckedChange={(v) => column.toggleVisibility(!!v)}
+                  className="capitalize"
+                >
+                  {column.id}
+                </DropdownMenuCheckboxItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </div>
 
       {/* 🧱 Table */}
@@ -154,25 +264,23 @@ export function BrandTable({
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => {
                   const columnId = header.column.id;
-                  const sorted = sort.includes(columnId);
+                  const isSortable = sortableColumns.has(columnId);
 
                   return (
                     <TableHead
                       key={header.id}
-                      onClick={() =>
-                        header.column.getCanSort()
-                          ? handleSort(
-                              columnId,
-                              sorted && sort.endsWith("asc") ? "desc" : "asc",
-                            )
-                          : null
+                      onClick={() => (isSortable ? handleSort(columnId) : null)}
+                      className={
+                        isSortable ? "cursor-pointer select-none" : undefined
                       }
-                      className="cursor-pointer select-none"
                     >
-                      {flexRender(
-                        header.column.columnDef.header,
-                        header.getContext(),
-                      )}
+                      <div className="flex items-center">
+                        {flexRender(
+                          header.column.columnDef.header,
+                          header.getContext(),
+                        )}
+                        {renderSortIcon(columnId)}
+                      </div>
                     </TableHead>
                   );
                 })}
@@ -208,30 +316,15 @@ export function BrandTable({
         </Table>
       </div>
 
-      {/* Pagination */}
-      <div className="flex justify-between items-center">
-        <span className="text-sm text-muted-foreground">
-          Page {page} of {totalPages}
-        </span>
-
-        <div className="space-x-2">
-          <Button
-            variant="outline"
-            disabled={page <= 1}
-            onClick={() => goToPage(page - 1)}
-          >
-            Prev
-          </Button>
-
-          <Button
-            variant="outline"
-            disabled={page >= totalPages}
-            onClick={() => goToPage(page + 1)}
-          >
-            Next
-          </Button>
-        </div>
-      </div>
+      <TablePagination
+        page={page}
+        totalPages={totalPages}
+        totalItems={total}
+        pageSize={pageSize}
+        pageSizeOptions={PAGE_SIZE_OPTIONS}
+        onPageChange={goToPage}
+        onPageSizeChange={handleLimitChange}
+      />
     </div>
   );
 }

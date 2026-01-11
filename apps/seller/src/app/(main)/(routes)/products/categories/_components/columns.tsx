@@ -26,7 +26,6 @@ export const columns: ColumnDef<Category>[] = [
   {
     accessorKey: "name",
     header: ({ column }) => {
-      console.log("column: ", column);
       return (
         <Button
           variant="ghost"

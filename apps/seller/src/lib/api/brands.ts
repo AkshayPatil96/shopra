@@ -39,13 +39,25 @@ export const useGetBrands = (params: BrandQueryParams) => {
   });
 };
 
-export const useGetBrandById = (id: string) => {
+type UseGetBrandByIdOptions = {
+  enabled?: boolean;
+};
+
+export const useGetBrandById = (
+  id?: string | null,
+  options?: UseGetBrandByIdOptions,
+) => {
   return useQuery({
     queryKey: ["brand", id],
     queryFn: async () => {
+      if (!id) {
+        throw new Error("Brand id is required to fetch brand details");
+      }
       const response = await BrandApi.getBrandById(id);
       return response;
-    }
+    },
+    enabled: Boolean(id) && (options?.enabled ?? true),
+    staleTime: 5 * 60 * 1000,
   });
 };
 

@@ -1,0 +1,31 @@
+:root {
+  /* Radius */
+  --radius: 0.6rem;
+
+  /* Status / Feedback */
+  --success: #2f855a;
+  --success-foreground: #ffffff;
+
+  --warning: #d69e2e;
+  --warning-foreground: #2b1e1a;
+
+  --info: #3182ce;
+  --info-foreground: #ffffff;
+
+  --destructive: #c2412d;
+  --destructive-foreground: #ffffff;
+}
+
+.dark {
+  --success: #38a169;
+  --success-foreground: #ffffff;
+
+  --warning: #ecc94b;
+  --warning-foreground: #1e1411;
+
+  --info: #63b3ed;
+  --info-foreground: #1e1411;
+
+  --destructive: #e5533d;
+  --destructive-foreground: #ffffff;
+}
